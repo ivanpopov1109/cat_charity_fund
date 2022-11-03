@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from app.core.db import get_async_session
 from app.schemas.charity_project import CharityProjctCreate, CharityProjectDB, CharityProjectUpdate
 from app.crud.charity_project import charity_project_crud
+from app.crud.validators import possible_update_charity_project
 
 router = APIRouter()
 
@@ -30,7 +31,11 @@ async def update_charity_project(charity_project_id: int,
     charity_project = await charity_project_crud.check_obj_exist(charity_project_id, session)
     if obj_in.name is not None:
         await charity_project_crud.check_name_duplicate(obj_in.name, session)
+
+    possible_update_charity_project(obj_in,charity_project, session)
     charity_project = await charity_project_crud.update(charity_project, obj_in, session)
     return charity_project
+
+
 
 
