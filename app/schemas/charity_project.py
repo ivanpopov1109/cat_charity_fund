@@ -19,3 +19,8 @@ class CharityProjectDB(BaseModel):
     close_date: Optional[datetime]
     class Config:
         orm_mode = True
+
+class CharityProjectUpdate(BaseModel):
+    name: Optional[str]
+    description: Optional[str]
+    full_amount: Optional[int]

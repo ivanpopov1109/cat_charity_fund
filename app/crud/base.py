@@ -2,6 +2,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
+from fastapi import HTTPException
 # from app.models import User
 
 
@@ -69,3 +70,10 @@ class CRUDBase:
         await session.delete(db_obj)
         await session.commit()
         return db_obj
+
+    async def check_obj_exist(self, obj_id: int, session: AsyncSession):
+        obj = await self.get(obj_id, session)
+        if obj is None:
+            raise HTTPException(status_code=404,
+                                detail='Целевой проект не найден!')
+        return obj
