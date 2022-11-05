@@ -1,9 +1,7 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
 from fastapi import HTTPException
-# from app.models import User
 
 
 class CRUDBase:
@@ -75,5 +73,5 @@ class CRUDBase:
         obj = await self.get(obj_id, session)
         if obj is None:
             raise HTTPException(status_code=404,
-                                detail='Целевой проект не найден!')
+                                detail='Объект с таким ID не найден!')
         return obj

@@ -28,6 +28,19 @@ class CRUDCharityProject(CRUDBase):
                 detail='Целевой проект с таким именем уже существует!',
             )
 
+    # async def remove(
+    #         self,
+    #         db_obj,
+    #         session: AsyncSession,
+    # ):
+    #     if db_obj.invested_amount == 0:
+    #         await session.delete(db_obj)
+    #         await session.commit()
+    #         return db_obj
+    #     else:
+    #         raise HTTPException(
+    #             detail='Нельзя удалить проект в который уже инвестированы средства!'
+    #         )
 
 
 charity_project_crud = CRUDCharityProject(CharityProject)

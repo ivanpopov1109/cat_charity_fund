@@ -3,7 +3,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from app.core.db import get_async_session
 from app.schemas.charity_project import CharityProjctCreate, CharityProjectDB, CharityProjectUpdate
 from app.crud.charity_project import charity_project_crud
-from app.crud.validators import possible_update_charity_project
+from app.crud.validators import possible_update_charity_project, possible_del_charity_project
+from app.models.charityproject import CharityProject
 
 router = APIRouter()
 
@@ -35,6 +36,16 @@ async def update_charity_project(charity_project_id: int,
     possible_update_charity_project(obj_in,charity_project, session)
     charity_project = await charity_project_crud.update(charity_project, obj_in, session)
     return charity_project
+
+@router.delete('/{charity_project_id}', response_model=CharityProjectDB)
+
+async def del_charity_project(charity_project_id: int,
+                              session: AsyncSession = Depends(get_async_session)):
+    obj = await possible_del_charity_project(charity_project_id, session)
+    obj = await charity_project_crud.remove(obj, session)
+    return obj
+
+
 
 
 
