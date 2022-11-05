@@ -1,5 +1,4 @@
 from app.crud.base import CRUDBase
-from app.models.charityproject import CharityProject
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 from typing import Optional

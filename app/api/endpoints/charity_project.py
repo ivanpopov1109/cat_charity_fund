@@ -1,16 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends
 from app.core.db import get_async_session
-from app.schemas.charity_project import CharityProjctCreate, CharityProjectDB, CharityProjectUpdate
+from app.schemas.charity_project import CharityProjectCreate, CharityProjectDB, CharityProjectUpdate
 from app.crud.charity_project import charity_project_crud
 from app.crud.validators import possible_update_charity_project, possible_del_charity_project
-from app.models.charityproject import CharityProject
 
 router = APIRouter()
 
 
 @router.post('/', response_model=CharityProjectDB)
-async def create_new_charity_project(charity_project: CharityProjctCreate,
+async def create_new_charity_project(charity_project: CharityProjectCreate,
                                      session: AsyncSession = Depends(get_async_session)):
     new_char_project = await charity_project_crud.create(charity_project, session)
     return new_char_project
