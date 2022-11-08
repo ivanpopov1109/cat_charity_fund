@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from app.core.db import get_async_session
 from app.schemas.donation import DonationCreate, DonationDB
 from app.crud.donation import donation_crud
+from app.services.invest_new_donate import InvestDonate
 
 router = APIRouter()
 
@@ -11,6 +12,7 @@ router = APIRouter()
 async def create_new_donation(donation: DonationCreate,
                               session: AsyncSession = Depends(get_async_session)):
     new_donation = await donation_crud.create(donation, session)
+    await InvestDonate.invest(new_donation, session)
     return new_donation
 
 
