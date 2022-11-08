@@ -1,11 +1,11 @@
-from sqlalchemy import select, func
+from sqlalchemy import select
 from app.models.charityproject import CharityProject
 from app.models.donation import Donation
 from typing import List
 from datetime import datetime
 
 
-class InvestDonate:
+class Invest:
     @classmethod
     async def _get_last_char_project(cls, session) -> List[CharityProject]:
         projects = await session.execute(select(CharityProject).where(CharityProject.fully_invested == False).order_by(
@@ -22,7 +22,6 @@ class InvestDonate:
     @classmethod
     async def invest(cls, donate: Donation, session):
         projects = await cls._get_last_char_project(session)
-        print(projects)
         for project in projects:
             balance = donate.full_amount - donate.invested_amount
             delta_project = project.full_amount - project.invested_amount

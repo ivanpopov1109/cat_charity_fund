@@ -4,6 +4,7 @@ from app.core.db import get_async_session
 from app.schemas.charity_project import CharityProjectCreate, CharityProjectDB, CharityProjectUpdate
 from app.crud.charity_project import charity_project_crud
 from app.crud.validators import possible_update_charity_project, possible_del_charity_project
+from app.services.invest_new_charity import Invest
 
 router = APIRouter()
 
@@ -12,6 +13,7 @@ router = APIRouter()
 async def create_new_charity_project(charity_project: CharityProjectCreate,
                                      session: AsyncSession = Depends(get_async_session)):
     new_char_project = await charity_project_crud.create(charity_project, session)
+    await Invest.invest(new_char_project, session)
     return new_char_project
 
 
