@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 from typing import Optional
 from sqlalchemy import select
-from app.models.charityproject import CharityProject
+from app.models import CharityProject
 
 
 class CRUDCharityProject(CRUDBase):

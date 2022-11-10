@@ -1,6 +1,6 @@
 from sqlalchemy import select
-from app.models.charityproject import CharityProject
-from app.models.donation import Donation
+from app.models import CharityProject
+from app.models import Donation
 from typing import List
 from datetime import datetime
 
