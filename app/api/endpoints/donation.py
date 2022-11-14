@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.core.db import get_async_session
 from app.schemas.donation import DonationCreate, DonationDB
 from app.crud.donation import donation_crud

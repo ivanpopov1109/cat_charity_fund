@@ -5,11 +5,13 @@ from app.schemas.charity_project import CharityProjectCreate, CharityProjectDB, 
 from app.crud.charity_project import charity_project_crud
 from app.crud.validators import possible_update_charity_project, possible_del_charity_project
 from app.services.invest_new_charity import Invest
+from app.core.user import current_superuser, current_user
 
 router = APIRouter()
 
 
-@router.post('/', response_model=CharityProjectDB)
+@router.post('/', response_model=CharityProjectDB,
+             dependencies= [Depends(current_superuser)])
 async def create_new_charity_project(charity_project: CharityProjectCreate,
                                      session: AsyncSession = Depends(get_async_session)):
     new_char_project = await charity_project_crud.create(charity_project, session)
@@ -34,20 +36,14 @@ async def update_charity_project(charity_project_id: int,
     if obj_in.name is not None:
         await charity_project_crud.check_name_duplicate(obj_in.name, session)
 
-    possible_update_charity_project(obj_in,charity_project, session)
+    possible_update_charity_project(obj_in, charity_project, session)
     charity_project = await charity_project_crud.update(charity_project, obj_in, session)
     return charity_project
 
-@router.delete('/{charity_project_id}', response_model=CharityProjectDB)
 
+@router.delete('/{charity_project_id}', response_model=CharityProjectDB)
 async def del_charity_project(charity_project_id: int,
                               session: AsyncSession = Depends(get_async_session)):
     obj = await possible_del_charity_project(charity_project_id, session)
     obj = await charity_project_crud.remove(obj, session)
     return obj
-
-
-
-
-
-
