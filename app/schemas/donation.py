@@ -16,7 +16,17 @@ class DonationDB(BaseModel):
     invested_amount: Optional[int]
     fully_invested: bool
     close_date: Optional[datetime]
+    user_id: Optional[int]
 
     class Config:
         orm_mode = True
 
+
+class DonationUser(BaseModel):
+    id: int
+    comment: Optional[str]
+    full_amount: PositiveInt
+    create_date: datetime
+
+    class Config:
+        orm_mode = True

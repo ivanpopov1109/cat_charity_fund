@@ -6,12 +6,13 @@ from app.crud.charity_project import charity_project_crud
 from app.crud.validators import possible_update_charity_project, possible_del_charity_project
 from app.services.invest_new_charity import Invest
 from app.core.user import current_superuser, current_user
+from app.models import User
 
 router = APIRouter()
 
 
 @router.post('/', response_model=CharityProjectDB,
-             dependencies= [Depends(current_superuser)])
+             dependencies=[Depends(current_superuser)])
 async def create_new_charity_project(charity_project: CharityProjectCreate,
                                      session: AsyncSession = Depends(get_async_session)):
     new_char_project = await charity_project_crud.create(charity_project, session)
@@ -27,11 +28,14 @@ async def get_all_charity_projects(session: AsyncSession = Depends(get_async_ses
     return all_char_projects
 
 
+
 @router.patch('/{charity_project_id}',
-              response_model=CharityProjectDB)
+              response_model=CharityProjectDB,
+              dependencies=[Depends(current_superuser)])
 async def update_charity_project(charity_project_id: int,
                                  obj_in: CharityProjectUpdate,
-                                 session: AsyncSession = Depends(get_async_session)):
+                                 session: AsyncSession = Depends(get_async_session),
+                                 ):
     charity_project = await charity_project_crud.check_obj_exist(charity_project_id, session)
     if obj_in.name is not None:
         await charity_project_crud.check_name_duplicate(obj_in.name, session)
@@ -41,9 +45,10 @@ async def update_charity_project(charity_project_id: int,
     return charity_project
 
 
-@router.delete('/{charity_project_id}', response_model=CharityProjectDB)
+@router.delete('/{charity_project_id}', response_model=CharityProjectDB, dependencies=[Depends(current_superuser)])
 async def del_charity_project(charity_project_id: int,
-                              session: AsyncSession = Depends(get_async_session)):
-    obj = await possible_del_charity_project(charity_project_id, session)
+                              session: AsyncSession = Depends(get_async_session),
+                              user: User = Depends(current_user)):
+    obj = await possible_del_charity_project(charity_project_id, session, user)
     obj = await charity_project_crud.remove(obj, session)
     return obj
