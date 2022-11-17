@@ -72,7 +72,4 @@ class CRUDBase:
 
     async def check_obj_exist(self, obj_id: int, session: AsyncSession):
         obj = await self.get(obj_id, session)
-        if obj is None:
-            raise HTTPException(status_code=404,
-                                detail='Объект с таким ID не найден!')
         return obj

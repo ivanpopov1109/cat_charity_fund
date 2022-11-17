@@ -30,6 +30,9 @@ async def possible_del_charity_project(obj_id: int,
                                        session: AsyncSession,
                                        user: User) -> CharityProject:
     obj = await charity_project_crud.check_obj_exist(obj_id, session)
+    if not obj:
+        raise HTTPException(status_code=404,
+                            detail='Объект с таким ID не найден!')
     if obj.invested_amount != 0:
         raise HTTPException(status_code= 404, detail='Нельзя удалить проект в который уже были инвестированы средства,'
                                    'его можно только закрыть.')

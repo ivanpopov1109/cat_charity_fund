@@ -22,13 +22,13 @@ async def create_new_donation(donation: DonationCreate,
 @router.get('/', response_model=list[DonationDB])
 async def get_all_donation(session: AsyncSession = Depends(get_async_session),
                            user: User = Depends(current_superuser)):
-    get_all_donation = await donation_crud.get_multi(session, user)
+    get_all_donation = await donation_crud.get_multi_by_user(session, user)
     return get_all_donation
 
 @router.get('/user_donations', response_model=list[DonationUser])
 async def get_user_donation(session: AsyncSession = Depends(get_async_session),
                            user: User = Depends(current_user)):
-    get_all_donation = await donation_crud.get_multi(session, user)
+    get_all_donation = await donation_crud.get_multi_by_user(session, user)
     return get_all_donation
 
 

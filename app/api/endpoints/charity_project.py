@@ -7,6 +7,8 @@ from app.crud.validators import possible_update_charity_project, possible_del_ch
 from app.services.invest_new_charity import Invest
 from app.core.user import current_superuser, current_user
 from app.models import User
+from fastapi import HTTPException
+
 
 router = APIRouter()
 
@@ -15,6 +17,9 @@ router = APIRouter()
              dependencies=[Depends(current_superuser)])
 async def create_new_charity_project(charity_project: CharityProjectCreate,
                                      session: AsyncSession = Depends(get_async_session)):
+    if await charity_project_crud.is_exist_name_duplicate(charity_project.name, session):
+        raise HTTPException(status_code=404,
+                            detail='Объект с таким именем уже существует.')
     new_char_project = await charity_project_crud.create(charity_project, session)
     await Invest.invest(new_char_project, session)
     return new_char_project
@@ -37,8 +42,16 @@ async def update_charity_project(charity_project_id: int,
                                  session: AsyncSession = Depends(get_async_session),
                                  ):
     charity_project = await charity_project_crud.check_obj_exist(charity_project_id, session)
+    if not charity_project:
+        raise HTTPException(status_code=404,
+                            detail='Объект с таким ID не найден.')
     if obj_in.name is not None:
-        await charity_project_crud.check_name_duplicate(obj_in.name, session)
+        name = await charity_project_crud.is_exist_name_duplicate(obj_in.name, session)
+        if name:
+            raise HTTPException(
+                status_code=422,
+                detail='Целевой проект с таким именем уже существует.',
+            )
 
     possible_update_charity_project(obj_in, charity_project, session)
     charity_project = await charity_project_crud.update(charity_project, obj_in, session)

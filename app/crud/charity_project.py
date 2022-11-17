@@ -1,6 +1,5 @@
 from app.crud.base import CRUDBase
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException
 from typing import Optional
 from sqlalchemy import select
 from app.models import CharityProject
@@ -16,30 +15,14 @@ class CRUDCharityProject(CRUDBase):
         charity_project_id = charity_project_id.scalars().first()
         return charity_project_id
 
-    async def check_name_duplicate(self,
+    async def is_exist_name_duplicate(self,
                                    charity_project_name: str,
                                    session: AsyncSession,
                                    ) -> None:
         charity_project_id = await self.get_charity_project_id_by_name(charity_project_name, session)
-        if charity_project_id is not None:
-            raise HTTPException(
-                status_code=422,
-                detail='Целевой проект с таким именем уже существует!',
-            )
+        print(charity_project_id)
+        return charity_project_id
 
-    # async def remove(
-    #         self,
-    #         db_obj,
-    #         session: AsyncSession,
-    # ):
-    #     if db_obj.invested_amount == 0:
-    #         await session.delete(db_obj)
-    #         await session.commit()
-    #         return db_obj
-    #     else:
-    #         raise HTTPException(
-    #             detail='Нельзя удалить проект в который уже инвестированы средства!'
-    #         )
 
 
 charity_project_crud = CRUDCharityProject(CharityProject)
