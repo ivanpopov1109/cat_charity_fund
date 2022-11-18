@@ -50,10 +50,13 @@ async def update_charity_project(charity_project_id: int,
         if name:
             raise HTTPException(
                 status_code=422,
-                detail='Целевой проект с таким именем уже существует.',
+                detail='Целевой проект с таким именем уже существует.'
             )
-
-    possible_update_charity_project(obj_in, charity_project, session)
+    try:
+        charity_project_crud.possible_update_charity_project(obj_in, charity_project, session)
+    except Exception:
+        raise HTTPException(status_code=404,
+                            detail='Проект не может быть отредактирован')
     charity_project = await charity_project_crud.update(charity_project, obj_in, session)
     return charity_project
 

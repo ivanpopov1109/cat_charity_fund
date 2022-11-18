@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from sqlalchemy import select
 from app.models import CharityProject
+from app.schemas.charity_project import CharityProjectUpdate, CharityProjectDB
+from app.models import User
 
 
 class CRUDCharityProject(CRUDBase):
@@ -20,9 +22,15 @@ class CRUDCharityProject(CRUDBase):
                                    session: AsyncSession,
                                    ) -> None:
         charity_project_id = await self.get_charity_project_id_by_name(charity_project_name, session)
-        print(charity_project_id)
         return charity_project_id
 
-
+    def possible_update_charity_project(new_obj: CharityProjectUpdate,
+                                        old_obj: CharityProjectDB,
+                                        user: User) -> None:
+        '''
+        Закрытый проект нельзя редактировать; нельзя установить требуемую сумму меньше уже вложенной.
+        '''
+        if old_obj.fully_invested or (old_obj.invested_amount < new_obj.full_amount):
+            raise Exception
 
 charity_project_crud = CRUDCharityProject(CharityProject)
