@@ -2,12 +2,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends
 from app.core.db import get_async_session
 from app.schemas.charity_project import CharityProjectCreate, CharityProjectDB, CharityProjectUpdate
-from app.crud.charity_project import charity_project_crud
-from app.crud.validators import possible_update_charity_project, possible_del_charity_project
+from app.crud.charity_project import charity_project_crud, CloseProjectError, DelError, AmountError
 from app.services.invest_new_charity import Invest
-from app.core.user import current_superuser, current_user
-from app.models import User
+from app.core.user import current_superuser
 from fastapi import HTTPException
+from http import HTTPStatus
 
 
 router = APIRouter()
@@ -18,7 +17,7 @@ router = APIRouter()
 async def create_new_charity_project(charity_project: CharityProjectCreate,
                                      session: AsyncSession = Depends(get_async_session)):
     if await charity_project_crud.is_exist_name_duplicate(charity_project.name, session):
-        raise HTTPException(status_code=404,
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
                             detail='Объект с таким именем уже существует.')
     new_char_project = await charity_project_crud.create(charity_project, session)
     await Invest.invest(new_char_project, session)
@@ -43,28 +42,42 @@ async def update_charity_project(charity_project_id: int,
                                  ):
     charity_project = await charity_project_crud.check_obj_exist(charity_project_id, session)
     if not charity_project:
-        raise HTTPException(status_code=404,
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='Объект с таким ID не найден.')
     if obj_in.name is not None:
         name = await charity_project_crud.is_exist_name_duplicate(obj_in.name, session)
         if name:
             raise HTTPException(
-                status_code=422,
+                status_code=HTTPStatus.BAD_REQUEST,
                 detail='Целевой проект с таким именем уже существует.'
             )
     try:
         charity_project_crud.possible_update_charity_project(obj_in, charity_project, session)
-    except Exception:
-        raise HTTPException(status_code=404,
-                            detail='Проект не может быть отредактирован')
+    except CloseProjectError:
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
+                            detail='Закрытый проект нельзя изменить.')
+    except AmountError:
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                            detail='Нельзя установить требуемую сумму меньше уже внесенной.')
     charity_project = await charity_project_crud.update(charity_project, obj_in, session)
     return charity_project
 
 
 @router.delete('/{charity_project_id}', response_model=CharityProjectDB, dependencies=[Depends(current_superuser)])
 async def del_charity_project(charity_project_id: int,
-                              session: AsyncSession = Depends(get_async_session),
-                              user: User = Depends(current_user)):
-    obj = await possible_del_charity_project(charity_project_id, session, user)
+                              session: AsyncSession = Depends(get_async_session)):
+    obj = await charity_project_crud.check_obj_exist(charity_project_id, session)
+    if not obj:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
+            detail='Объект с таким id не найден')
+    try:
+        charity_project_crud.possible_del_charity_project(obj)
+    except DelError:
+       raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
+                           detail='Нельзя удалить объект в который в который уже были внесены средства.')
+    except CloseProjectError:
+       raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
+                           detail='Закрытый проект нельзя удалить')
+
     obj = await charity_project_crud.remove(obj, session)
     return obj

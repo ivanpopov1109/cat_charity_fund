@@ -7,5 +7,5 @@ class Donation(Base, BaseModel):
     comment = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey('user.id'))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'id: {self.id}, comment: {self.comment}, full_amount: {self.full_amount}'
