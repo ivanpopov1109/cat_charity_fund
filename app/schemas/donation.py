@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field, validator, PositiveInt
+from pydantic import BaseModel, PositiveInt
 from datetime import datetime
 
 

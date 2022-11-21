@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models import CharityProject
 from app.schemas.charity_project import CharityProjectUpdate, CharityProjectDB
-from app.models import User
 
 
 class CharityProjectError(Exception):
@@ -15,24 +14,24 @@ class UpdateError(CharityProjectError):
 
 
 class CloseProjectError(CharityProjectError):
-    '''Закрытый объект нельзя удалить или изменить'''
+    """Закрытый объект нельзя удалить или изменить"""
     pass
 
 
 class AmountError(CharityProjectError):
-    '''Нельзя установить требуюемую сумму меньше уже вложенной'''
+    """Нельзя установить требуемую сумму меньше уже вложенной"""
     pass
 
 
 class DelError(CharityProjectError):
-    '''Нельзя удалить или изменить объект в который уже вложены средства'''
+    """Нельзя удалить или изменить объект в который уже вложены средства"""
     pass
 
 
 class CRUDCharityProject(CRUDBase):
 
-    async def get_charity_project_id_by_name(self,
-                                             charity_project_name: str,
+    @staticmethod
+    async def get_charity_project_id_by_name(charity_project_name: str,
                                              session: AsyncSession) -> int | None:
         charity_project_id = await session.execute(select(CharityProject.id).
                                                    where(CharityProject.name == charity_project_name))
@@ -46,7 +45,8 @@ class CRUDCharityProject(CRUDBase):
         charity_project_id = await self.get_charity_project_id_by_name(charity_project_name, session)
         return charity_project_id
 
-    def possible_update_charity_project(self, new_obj: CharityProjectUpdate,
+    @staticmethod
+    def possible_update_charity_project(new_obj: CharityProjectUpdate,
                                         old_obj: CharityProjectDB) -> None:
 
         if old_obj.fully_invested:
@@ -54,7 +54,8 @@ class CRUDCharityProject(CRUDBase):
         if old_obj.invested_amount < new_obj.full_amount:
             raise AmountError
 
-    def possible_del_charity_project(self, obj: CharityProject) -> None:
+    @staticmethod
+    def possible_del_charity_project(obj: CharityProject) -> None:
         if obj.invested_amount != 0:
             raise DelError
         if obj.fully_invested:

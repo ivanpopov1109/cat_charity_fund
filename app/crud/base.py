@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from app.models import User
 
+
 class CRUDBase:
 
     def __init__(self, model):
@@ -24,7 +25,7 @@ class CRUDBase:
     async def get_multi(
             self,
             session: AsyncSession,
-           ):
+    ):
         db_objs = await session.execute(select(self.model))
         return db_objs.scalars().all()
 
@@ -43,12 +44,11 @@ class CRUDBase:
         await session.refresh(db_obj)
         return db_obj
 
-    async def update(
-            self,
-            db_obj,
-            obj_in,
-            session: AsyncSession,
-    ):
+    @staticmethod
+    async def update(db_obj,
+                     obj_in,
+                     session: AsyncSession,
+                     ):
         obj_data = jsonable_encoder(db_obj)
         update_data = obj_in.dict(exclude_unset=True)
 
@@ -60,11 +60,10 @@ class CRUDBase:
         await session.refresh(db_obj)
         return db_obj
 
-    async def remove(
-            self,
-            db_obj,
-            session: AsyncSession,
-    ):
+    @staticmethod
+    async def remove(db_obj,
+                     session: AsyncSession,
+                     ):
         await session.delete(db_obj)
         await session.commit()
         return db_obj

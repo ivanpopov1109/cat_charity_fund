@@ -30,6 +30,7 @@ class CharityProjectDB(BaseModel):
 
 class CharityProjectUpdate(BaseModel):
 
+    @classmethod
     @validator('name')
     def name_cannot_be_null(cls, value):
         if value is None:
