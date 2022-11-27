@@ -1,6 +1,7 @@
-from app.crud.base import CRUDBase
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+
+from app.crud.base import CRUDBase
 from app.models import CharityProject
 from app.schemas.charity_project import CharityProjectUpdate, CharityProjectDB
 

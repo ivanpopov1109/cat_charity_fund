@@ -1,12 +1,14 @@
+from http import HTTPStatus
+from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+
 from app.core.db import get_async_session
+from app.core.user import current_superuser
 from app.schemas.charity_project import CharityProjectCreate, CharityProjectDB, CharityProjectUpdate
 from app.crud.charity_project import charity_project_crud, CloseProjectError, DelError, AmountError
 from app.services.invest_new_charity import invest_new_charity
-from app.core.user import current_superuser
-from fastapi import HTTPException
-from http import HTTPStatus
 
 router = APIRouter()
 
@@ -14,7 +16,7 @@ router = APIRouter()
 @router.post('/', response_model=CharityProjectDB,
              dependencies=[Depends(current_superuser)])
 async def create_new_charity_project(charity_project: CharityProjectCreate,
-                                     session: AsyncSession = Depends(get_async_session)):
+                                     session: AsyncSession = Depends(get_async_session)) -> Any:
     if await charity_project_crud.is_exist_name_duplicate(charity_project.name, session):
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
                             detail='Объект с таким именем уже существует.')
@@ -26,7 +28,7 @@ async def create_new_charity_project(charity_project: CharityProjectCreate,
 @router.get('/',
             response_model=list[CharityProjectDB],
             response_model_exclude_none=True)
-async def get_all_charity_projects(session: AsyncSession = Depends(get_async_session)) -> list[CharityProjectDB]:
+async def get_all_charity_projects(session: AsyncSession = Depends(get_async_session)) -> Any:
     all_char_projects = await charity_project_crud.get_multi(session)
     return all_char_projects
 
@@ -37,7 +39,7 @@ async def get_all_charity_projects(session: AsyncSession = Depends(get_async_ses
 async def update_charity_project(charity_project_id: int,
                                  obj_in: CharityProjectUpdate,
                                  session: AsyncSession = Depends(get_async_session),
-                                 ) -> CharityProjectDB:
+                                 ) -> Any:
     charity_project = await charity_project_crud.check_obj_exist(charity_project_id, session)
     if not charity_project:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
@@ -63,7 +65,7 @@ async def update_charity_project(charity_project_id: int,
 
 @router.delete('/{charity_project_id}', response_model=CharityProjectDB, dependencies=[Depends(current_superuser)])
 async def del_charity_project(charity_project_id: int,
-                              session: AsyncSession = Depends(get_async_session)):
+                              session: AsyncSession = Depends(get_async_session)) -> Any:
     obj = await charity_project_crud.check_obj_exist(charity_project_id, session)
     if not obj:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
@@ -79,4 +81,3 @@ async def del_charity_project(charity_project_id: int,
 
     obj = await charity_project_crud.remove(obj, session)
     return obj
-

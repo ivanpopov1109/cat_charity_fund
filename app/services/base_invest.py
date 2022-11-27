@@ -1,12 +1,19 @@
-from sqlalchemy import select
 from datetime import datetime
+from typing import Generic, TypeVar
 
-class BaseInvest:
+from sqlalchemy import select
+
+from app.models.basemodel import BaseModel
+
+Model = TypeVar('Model', bound=BaseModel)
+
+
+class BaseInvest(Generic[Model]):
 
     def __init__(self, model_for_invest):
         self._model = model_for_invest
 
-    async def _get_last_open_project(self, session) -> list:
+    async def _get_last_open_project(self, session) -> list[Model]:
         projects = await session.execute(select(self._model).where(self._model.fully_invested == False).order_by(
             self._model.create_date))
         projects = projects.scalars().all()
@@ -18,7 +25,7 @@ class BaseInvest:
         obj.invested_amount = obj.full_amount
         obj.close_date = datetime.now()
 
-    async def invest(self, donate, session):
+    async def invest(self, donate, session) -> None:
         projects = await self._get_last_open_project(session)
         for project in projects:
             balance = donate.full_amount - donate.invested_amount
