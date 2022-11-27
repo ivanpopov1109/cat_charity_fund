@@ -1,23 +1,19 @@
 from sqlalchemy import select
 from datetime import datetime
 
-
 class BaseInvest:
 
     def __init__(self, model_for_invest):
         self._model = model_for_invest
 
-    async def _get_last_open_project(self, session):
+    async def _get_last_open_project(self, session) -> list:
         projects = await session.execute(select(self._model).where(self._model.fully_invested == False).order_by(
             self._model.create_date))
-        print('from _get_last_open_project:', projects)
-
         projects = projects.scalars().all()
-        print('from _get_last_open_project:', projects)
         return projects
 
     @classmethod
-    def close_obj(cls, obj):
+    def close_obj(cls, obj) -> None:
         obj.fully_invested = True
         obj.invested_amount = obj.full_amount
         obj.close_date = datetime.now()
